@@ -1,45 +1,51 @@
 import streamlit as st
 import numpy as np
 import matplotlib.pyplot as plt
-import random
 import time
 
-st.set_page_config(layout="wide", page_title="유리함수 시각화: y = k/(x-p) + q")
-
+st.set_page_config(layout="wide", page_title="유리함수 시각화: y = k/(x-p)+q")
 st.title("유리함수 시각화: y = k / (x - p) + q")
 
-# 세션 상태 초기화
+# 세션 초기화
 if "params" not in st.session_state:
-    st.session_state.params = {"p":0, "q":0, "k":1}
-
-# 입력: p, q, k
-cols = st.columns(3)
-p = cols[0].number_input("x축 이동 p", value=st.session_state.params["p"], step=1)
-q = cols[1].number_input("y축 이동 q", value=st.session_state.params["q"], step=1)
-k = cols[2].number_input("k 값", value=st.session_state.params["k"], step=1)
-
-# 세션 상태 저장
-st.session_state.params.update({"p":p,"q":q,"k":k})
+    st.session_state.params = {"p":0, "q":0, "k":0}
 
 # 새로운 함수 만들기 버튼
 if st.button("새로운 함수 만들기"):
-    # 랜덤 값 생성
-    st.session_state.params["p"] = random.randint(-5,5)
-    st.session_state.params["q"] = random.randint(-5,5)
-    st.session_state.params["k"] = random.randint(1,10)  # k=0은 의미 없음
-    p = st.session_state.params["p"]
-    q = st.session_state.params["q"]
-    k = st.session_state.params["k"]
+    st.session_state.params = {"p":0, "q":0, "k":0}
 
-    # 풍선 효과
-    st.markdown("### 🎈 풍선 올라가는 효과 🎈")
-    for i in range(5):
-        st.markdown(" ".join(["🎈"] * 10))
+    # 풍선 아래->위 애니메이션
+    balloon_area = st.empty()
+    for i in range(10,0,-1):
+        balloon_area.markdown("<p style='font-size:30px; text-align:center;'>" + "🎈 "*i + "</p>", unsafe_allow_html=True)
         time.sleep(0.1)
+    balloon_area.empty()  # 마지막에 비우기
+
+# 입력칸 (직접 숫자 입력)
+cols = st.columns(3)
+p_str = cols[0].text_input("x축 이동 p", value=str(st.session_state.params["p"]))
+q_str = cols[1].text_input("y축 이동 q", value=str(st.session_state.params["q"]))
+k_str = cols[2].text_input("k 값", value=str(st.session_state.params["k"]))
+
+# 입력값 숫자 변환
+try:
+    p = int(p_str)
+except:
+    p = 0
+try:
+    q = int(q_str)
+except:
+    q = 0
+try:
+    k = float(k_str)
+except:
+    k = 0
+
+st.session_state.params.update({"p":p,"q":q,"k":k})
 
 st.subheader(f"현재 함수: y = {k} / (x - {p}) + {q}")
 
-# 정의역, 치역, 점근선 계산
+# 정의역, 치역, 점근선
 vertical_asymp = p
 horizontal_asymp = q
 
@@ -47,22 +53,16 @@ st.markdown("### 함수 정보")
 st.write(f"- 수직 점근선: x = {vertical_asymp}")
 st.write(f"- 수평 점근선: y = {horizontal_asymp}")
 st.write(f"- 정의역: 모든 실수 x ≠ {vertical_asymp}")
-if k != 0:
-    st.write(f"- 치역: 모든 실수 y ≠ {horizontal_asymp}")
-else:
-    st.write(f"- 치역: y = {horizontal_asymp} (상수 함수)")
+st.write(f"- 치역: 모든 실수 y ≠ {horizontal_asymp}" if k != 0 else f"- 치역: y = {horizontal_asymp} (상수 함수)")
 
 # 그래프 그리기
 x = np.linspace(p - 10, p + 10, 1000)
-y = k / (x - p) + q
+y = np.where(x != p, k / (x - p) + q, np.nan)
 
 fig, ax = plt.subplots(figsize=(8,5))
 ax.plot(x, y, label=f"y = {k}/(x-{p}) + {q}")
-
-# 점근선
 ax.axvline(x=vertical_asymp, color='r', linestyle='--', label='수직 점근선')
 ax.axhline(y=horizontal_asymp, color='g', linestyle='--', label='수평 점근선')
-
 ax.set_xlim(p - 10, p + 10)
 ax.set_ylim(q - 10, q + 10)
 ax.set_xlabel("x")
