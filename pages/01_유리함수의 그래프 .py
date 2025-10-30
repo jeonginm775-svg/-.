@@ -6,7 +6,7 @@ import time
 st.set_page_config(layout="wide", page_title="유리함수 시각화: y = k/(x-p)+q")
 st.title("유리함수 시각화: y = k / (x - p) + q")
 
-# 세션 초기화
+# 세션 상태 초기화
 if "params" not in st.session_state:
     st.session_state.params = {"p":0, "q":0, "k":0}
 
@@ -14,12 +14,12 @@ if "params" not in st.session_state:
 if st.button("새로운 함수 만들기"):
     st.session_state.params = {"p":0, "q":0, "k":0}
 
-    # 풍선 아래->위 애니메이션
-    balloon_area = st.empty()
-    for i in range(10,0,-1):
-        balloon_area.markdown("<p style='font-size:30px; text-align:center;'>" + "🎈 "*i + "</p>", unsafe_allow_html=True)
+    # 아래→위 고양이 애니메이션
+    cat_area = st.empty()
+    for i in range(10, 0, -1):
+        cat_area.markdown("<p style='font-size:30px; text-align:center;'>" + "🐱 "*i + "</p>", unsafe_allow_html=True)
         time.sleep(0.1)
-    balloon_area.empty()  # 마지막에 비우기
+    cat_area.empty()
 
 # 입력칸 (직접 숫자 입력)
 cols = st.columns(3)
@@ -60,9 +60,16 @@ x = np.linspace(p - 10, p + 10, 1000)
 y = np.where(x != p, k / (x - p) + q, np.nan)
 
 fig, ax = plt.subplots(figsize=(8,5))
-ax.plot(x, y, label=f"y = {k}/(x-{p}) + {q}")
-ax.axvline(x=vertical_asymp, color='r', linestyle='--', label='수직 점근선')
-ax.axhline(y=horizontal_asymp, color='g', linestyle='--', label='수평 점근선')
+ax.plot(x, y, label=f"y = {k}/(x-{p}) + {q}", color="blue")
+
+# 점근선
+ax.axvline(x=vertical_asymp, color='r', linestyle='--', label=f'수직 점근선 x={vertical_asymp}')
+ax.axhline(y=horizontal_asymp, color='g', linestyle='--', label=f'수평 점근선 y={horizontal_asymp}')
+
+# 점근선 숫자 표시
+ax.text(vertical_asymp+0.1, ax.get_ylim()[1]-1, f"x={vertical_asymp}", color='r')
+ax.text(ax.get_xlim()[0]+0.5, horizontal_asymp+0.1, f"y={horizontal_asymp}", color='g')
+
 ax.set_xlim(p - 10, p + 10)
 ax.set_ylim(q - 10, q + 10)
 ax.set_xlabel("x")
