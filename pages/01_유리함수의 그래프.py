@@ -5,55 +5,62 @@ import random
 
 st.set_page_config(page_title="유리함수 교과서", layout="centered")
 
-st.title("📘 유리함수 교과서 자동 생성기")
-st.markdown("랜덤 유리함수를 보고, 직접 그래프를 분석해 보세요!")
+st.title("📘 정수 점근선·절편 유리함수 교과서")
+st.markdown("랜덤으로 생성된 유리함수를 보고 그래프를 탐구해보세요!")
 
-# --- 1. 랜덤 유리함수 생성 ---
-if 'a' not in st.session_state:
-    st.session_state.a = random.randint(-5, 5)
-    st.session_state.b = random.randint(-5, 5)
-    st.session_state.c = random.randint(-5, 5)
-    st.session_state.d = random.randint(-5, 5)
+# --------------------------
+# 1️⃣ 유리함수 생성 함수
+# --------------------------
+def generate_rational():
+    c = random.choice([i for i in range(-5, 6) if i != 0])  # 0 제외
+    k = random.randint(-5, 5)  # 수직점근선 x = k
+    m = random.randint(-5, 5)  # 수평점근선 y = m
+    n = random.randint(-5, 5)  # y절편 = n
 
-col1, col2 = st.columns(2)
-with col1:
-    if st.button("🔄 새로운 유리함수 생성"):
-        st.session_state.a = random.randint(-5, 5)
-        st.session_state.b = random.randint(-5, 5)
-        st.session_state.c = random.randint(-5, 5)
-        st.session_state.d = random.randint(-5, 5)
+    a = c * m
+    d = -c * k
+    b = d * n
+    return a, b, c, d, k, m, n
 
-a, b, c, d = st.session_state.a, st.session_state.b, st.session_state.c, st.session_state.d
+# --------------------------
+# 2️⃣ 세션 상태로 저장
+# --------------------------
+if "coeffs" not in st.session_state:
+    st.session_state.coeffs = generate_rational()
 
-st.subheader("랜덤으로 생성된 유리함수:")
+if st.button("🔄 새로운 유리함수 생성"):
+    st.session_state.coeffs = generate_rational()
+
+a, b, c, d, k, m, n = st.session_state.coeffs
+
+st.subheader("랜덤으로 생성된 유리함수")
 st.latex(f"f(x) = \\frac{{{a}x + {b}}}{{{c}x + {d}}}")
 
-# --- 2. 사용자 조정 ---
-st.markdown("#### 그래프 조정")
-col1, col2, col3 = st.columns(3)
-user_a = col1.slider("a (분자 기울기)", -5, 5, a)
-user_b = col2.slider("b (분자 절편)", -5, 5, b)
-user_c = col3.slider("c (분모 기울기)", -5, 5, c)
-user_d = st.slider("d (분모 절편)", -5, 5, d)
-
-# --- 3. 그래프 그리기 ---
-x = np.linspace(-10, 10, 1000)
-# 분모가 0이 되는 점 제외
-mask = (user_c * x + user_d) != 0
+# --------------------------
+# 3️⃣ 그래프 영역
+# --------------------------
+x = np.linspace(-10, 10, 2000)
+mask = (c * x + d) != 0
 y = np.zeros_like(x)
-y[mask] = (user_a * x[mask] + user_b) / (user_c * x[mask] + user_d)
+y[mask] = (a * x[mask] + b) / (c * x[mask] + d)
 
 fig, ax = plt.subplots()
-ax.plot(x[mask], y[mask], label=f"f(x) = ({user_a}x+{user_b})/({user_c}x+{user_d})")
+ax.plot(x[mask], y[mask], label=f"f(x) = ({a}x+{b})/({c}x+{d})")
 ax.axhline(0, color='black', linewidth=0.8)
 ax.axvline(0, color='black', linewidth=0.8)
+ax.axhline(m, color='red', linestyle='--', label=f"수평점근선 y={m}")
+ax.axvline(k, color='blue', linestyle='--', label=f"수직점근선 x={k}")
+ax.scatter(0, n, color='green', s=60, zorder=5, label=f"y절편 = {n}")
 ax.set_ylim(-10, 10)
 ax.set_xlim(-10, 10)
 ax.legend()
 ax.grid(True)
 st.pyplot(fig)
 
-# --- 4. 요약 표시 ---
-st.markdown("#### 📘 함수 분석 요약")
-st.write(f"- 수직 점근선: x = {-user_d/user_c if user_c != 0 else '없음'}")
-st.write(f"- 수평 점근선: y = {user_a/user_c if user_c != 0 else '없음'}")
+# --------------------------
+# 4️⃣ 요약
+# --------------------------
+st.markdown("#### 📘 함수의 성질 요약")
+st.write(f"- **수직 점근선:** x = {k}")
+st.write(f"- **수평 점근선:** y = {m}")
+st.write(f"- **y절편:** (0, {n})")
