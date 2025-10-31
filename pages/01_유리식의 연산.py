@@ -1,6 +1,6 @@
 import streamlit as st
 
-# 5문제 퀴즈 데이터 정의 (Raw String 'r' 사용으로 LaTeX SyntaxError 해결)
+# 5문제 퀴즈 데이터 정의 (Raw String 'r' 사용)
 quiz_data = [
     {
         "question": r"Q1. 다음 유리식 $\frac{x^2 - 4}{x^2 - 5x + 6}$ 를 간단히 하시오.",
@@ -125,8 +125,8 @@ def submit_answer(selected_option_index):
         if st.session_state.score == len(quiz_data):
             st.session_state.quiz_finished = True
         
-        # 정답 후 상태 변경을 반영하기 위해 앱을 다시 실행
-        st.experimental_rerun()
+        # 정답 후 상태 변경을 반영하기 위해 앱을 다시 실행 (st.experimental_rerun -> st.rerun)
+        st.rerun() 
         
     else:
         st.error("❌ 오답입니다. 다시 한번 생각해 보세요.")
@@ -146,7 +146,6 @@ def app():
         current_q = quiz_data[q_index]
 
         st.header(f"문제 {q_index + 1}.")
-        # st.latex() 함수는 Raw String을 완벽하게 처리합니다.
         st.latex(current_q["question"])
         
         # 라디오 버튼으로 보기 표시
@@ -175,12 +174,14 @@ def app():
             if st.session_state.current_q_index > 0:
                 if st.button("⬅️ 이전 문제"):
                     st.session_state.current_q_index -= 1
-                    st.experimental_rerun()
+                    # st.experimental_rerun -> st.rerun
+                    st.rerun() 
         with col2:
             if st.session_state.current_q_index < len(quiz_data) - 1:
                 if st.button("다음 문제 ➡️"):
                     st.session_state.current_q_index += 1
-                    st.experimental_rerun()
+                    # st.experimental_rerun -> st.rerun
+                    st.rerun() 
             elif st.session_state.current_q_index == len(quiz_data) - 1:
                 st.write("마지막 문제입니다.")
         
@@ -200,7 +201,8 @@ def app():
             st.session_state.score = 0
             st.session_state.correct_answers = [False] * len(quiz_data)
             st.session_state.quiz_finished = False
-            st.experimental_rerun()
+            # st.experimental_rerun -> st.rerun
+            st.rerun() 
 
 if __name__ == "__main__":
     app()
