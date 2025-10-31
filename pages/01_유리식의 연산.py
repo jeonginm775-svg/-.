@@ -1,33 +1,38 @@
 import streamlit as st
 
-# 5문제 퀴즈 데이터 정의 (Raw String 'r' 사용)
+# 5문제 퀴즈 데이터 정의 (질문 텍스트와 수학 수식을 분리하여 표시 오류 해결)
 quiz_data = [
     {
-        "question": r"Q1. 다음 유리식 $\frac{x^2 - 4}{x^2 - 5x + 6}$ 를 간단히 하시오.",
+        "question_text": "Q1. 다음 유리식을 간단히 하시오.",
+        "question_math": r"\frac{x^2 - 4}{x^2 - 5x + 6}", # 순수 수식 (달러 기호 제거)
         "options": [r"$\frac{x-2}{x+3}$", r"$\frac{x+2}{x-3}$", r"$\frac{x+2}{x+3}$", r"$\frac{x-3}{x+2}$"],
         "correct_index": 1,
         "rationale": r"분자 $x^2-4 = (x-2)(x+2)$, 분모 $x^2-5x+6 = (x-2)(x-3)$을 인수분해하여 공통 인수 $(x-2)$를 약분합니다."
     },
     {
-        "question": r"Q2. $\frac{1}{x} + \frac{1}{x+1}$ 을 계산하시오.",
+        "question_text": "Q2. 다음 식을 계산하시오.",
+        "question_math": r"\frac{1}{x} + \frac{1}{x+1}",
         "options": [r"$\frac{2}{x(x+1)}$", r"$\frac{2x+1}{x(x+1)}$", r"$\frac{x+1}{x^2+x}$", r"$\frac{x+1}{2x+1}$"],
         "correct_index": 1,
         "rationale": r"공통분모 $x(x+1)$로 통분하면 $\frac{x+1}{x(x+1)} + \frac{x}{x(x+1)} = \frac{2x+1}{x(x+1)}$ 입니다."
     },
     {
-        "question": r"Q3. $\frac{x}{x-1} - \frac{1}{1-x}$ 을 계산하시오.",
+        "question_text": "Q3. 다음 식을 계산하시오.",
+        "question_math": r"\frac{x}{x-1} - \frac{1}{1-x}",
         "options": [r"$\frac{x-1}{x-1}$", r"$\frac{x+1}{x-1}$", r"$\frac{x-1}{2}$", r"$1$"],
         "correct_index": 1,
         "rationale": r"$\frac{1}{1-x} = \frac{-1}{x-1}$ 이므로 $\frac{x}{x-1} - \frac{-1}{x-1} = \frac{x+1}{x-1}$ 입니다."
     },
     {
-        "question": r"Q4. $\frac{x+2}{x^2 - 1} \times \frac{x-1}{x^2 + 4x + 4}$ 을 간단히 하시오.",
+        "question_text": "Q4. 다음 식을 간단히 하시오.",
+        "question_math": r"\frac{x+2}{x^2 - 1} \times \frac{x-1}{x^2 + 4x + 4}",
         "options": [r"$\frac{x-1}{(x-1)(x+2)}$", r"$\frac{1}{(x+1)(x+2)}$", r"$\frac{1}{x+1}$", r"$\frac{1}{x+2}$"],
         "correct_index": 1,
         "rationale": r"$\frac{x+2}{(x-1)(x+1)} \times \frac{x-1}{(x+2)^2}$ 로 인수분해하여 약분하면 $\frac{1}{(x+1)(x+2)}$ 입니다."
     },
     {
-        "question": r"Q5. $(\frac{1}{a} - \frac{1}{b}) \div \frac{b^2 - a^2}{a^2 b^2}$ 을 계산하시오.",
+        "question_text": "Q5. 다음 식을 계산하시오.",
+        "question_math": r"(\frac{1}{a} - \frac{1}{b}) \div \frac{b^2 - a^2}{a^2 b^2}",
         "options": [r"$\frac{a+b}{ab}$", r"$\frac{1}{a+b}$", r"$\frac{ab}{a+b}$", r"$a+b$"],
         "correct_index": 2,
         "rationale": r"$\frac{b-a}{ab} \times \frac{a^2 b^2}{(b-a)(b+a)}$ 이 되어 약분하면 $\frac{ab}{a+b}$ 입니다."
@@ -125,7 +130,7 @@ def submit_answer(selected_option_index):
         if st.session_state.score == len(quiz_data):
             st.session_state.quiz_finished = True
         
-        # 정답 후 상태 변경을 반영하기 위해 앱을 다시 실행 (st.experimental_rerun -> st.rerun)
+        # 상태 변경을 반영하기 위해 앱을 다시 실행 (수정된 함수)
         st.rerun() 
         
     else:
@@ -146,7 +151,9 @@ def app():
         current_q = quiz_data[q_index]
 
         st.header(f"문제 {q_index + 1}.")
-        st.latex(current_q["question"])
+        # 텍스트와 수식을 분리하여 렌더링 (질문 표시 오류 수정)
+        st.markdown(current_q["question_text"])
+        st.latex(current_q["question_math"]) 
         
         # 라디오 버튼으로 보기 표시
         selected_option = st.radio(
@@ -174,13 +181,11 @@ def app():
             if st.session_state.current_q_index > 0:
                 if st.button("⬅️ 이전 문제"):
                     st.session_state.current_q_index -= 1
-                    # st.experimental_rerun -> st.rerun
-                    st.rerun() 
+                    st.rerun()
         with col2:
             if st.session_state.current_q_index < len(quiz_data) - 1:
                 if st.button("다음 문제 ➡️"):
                     st.session_state.current_q_index += 1
-                    # st.experimental_rerun -> st.rerun
                     st.rerun() 
             elif st.session_state.current_q_index == len(quiz_data) - 1:
                 st.write("마지막 문제입니다.")
@@ -201,8 +206,7 @@ def app():
             st.session_state.score = 0
             st.session_state.correct_answers = [False] * len(quiz_data)
             st.session_state.quiz_finished = False
-            # st.experimental_rerun -> st.rerun
-            st.rerun() 
+            st.rerun()
 
 if __name__ == "__main__":
     app()
